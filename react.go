@@ -19,14 +19,19 @@ func (c *cell) Value() int {
 // *cell now implements InputCell
 func (c *cell) SetValue(newValue int) {
 	c.value = newValue
-	if c.isCompute == false {
-		// if compute, propagate change to its dependencies
+	if !c.isCompute {
+		// if input, propagate change to its dependencies
 		for inputCell, computeCells := range c._reactor.dependencies {
 			if inputCell == c {
 				for _, cell_t := range computeCells {
 					// assert that the object implementing Cell is cell struct
 					computeCell := (cell_t).(*cell)
-					computeCell.value = newValue
+
+					if computeCell.compute1 != nil {
+						computeCell.value = computeCell.compute1(newValue)
+					} else {
+						computeCell.value = computeCell.compute2(newValue, newValue)
+					}
 
 					// execute this computeCell's callbacks
 					for _, fCallback := range computeCell.callbacks {
