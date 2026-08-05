@@ -28,6 +28,7 @@ func (c *cell) Value() int {
 func (c *inputCell) SetValue(newValue int) {
 	c.value = newValue
 
+	panic("propagate changes")
 }
 
 func (c *computeCell) AddCallback(f func(int)) Canceler {
@@ -60,17 +61,41 @@ func (*reactor) Update(cell Cell) {
 }
 
 func New() Reactor {
-	panic("not implemented")
+	return &reactor{
+		adjList: make(map[Cell][]Cell),
+	}
 }
 
 func (r *reactor) CreateInput(initial int) InputCell {
-	panic("not implemented")
+	iCell := &inputCell{}
+
+	iCell.value = initial
+
+	return iCell
 }
 
 func (r *reactor) CreateCompute1(dep Cell, compute func(int) int) ComputeCell {
-	panic("not implemented")
+	cCell := &computeCell{
+		deps:      make([]Cell, 0),
+		callbacks: make(map[int]func(int), 0),
+	}
+
+	cCell.value = compute(dep.Value())
+	cCell.deps = append(cCell.deps, dep)
+
+	return cCell
 }
 
 func (r *reactor) CreateCompute2(dep1, dep2 Cell, compute func(int, int) int) ComputeCell {
-	panic("not implemented")
+	cCell := &computeCell{
+		deps:      make([]Cell, 0),
+		callbacks: make(map[int]func(int), 0),
+	}
+
+	cCell.value = compute(dep1.Value(), dep2.Value())
+	cCell.deps = append(cCell.deps, dep1)
+	cCell.deps = append(cCell.deps, dep2)
+
+	return cCell
+
 }
